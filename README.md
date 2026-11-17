@@ -1,8 +1,7 @@
 # DDD — Drivers, Drivers, Drivers
 
-A dark Windows tool that checks the drivers and BIOS on your PC, finds newer versions, and gives you
-**the download link and notes on what each update improves or fixes**. It never installs anything
-itself — you decide what to download.
+A dark Windows tool that checks the drivers and BIOS on your PC, finds newer versions, shows
+**notes on what each update improves or fixes**, and can **download and install** them for you.
 
 ![Updates: newer drivers with what they fix](screenshots/updates.png)
 
@@ -18,6 +17,22 @@ From [Releases](https://github.com/Taoism/DDD/releases/latest):
 
 Both are self-contained (no .NET install needed) and include the app (`DDD.exe`) and the command-line
 tool (`ddd-cli.exe`). Windows 10 1809 or later, x64. `SHA256SUMS.txt` lists the checksums.
+
+## Download and install
+
+**Download all** fetches every update into `%TEMP%\DDD\downloads` and checks it before use: Microsoft's
+SHA-1 from the file name for Update Catalog packages, the vendor's SHA-256 for Dell, HP and Lenovo, and a
+valid digital signature for every installer (`.exe`). Driver `.cab` packages are extracted.
+
+**Install** (enabled once something downloaded and checked out) installs them:
+- driver packages with Windows' own `pnputil /add-driver … /install`, all in one run with a single
+  administrator prompt; DDD first tries to create a System Restore point;
+- vendor installers (NVIDIA, Dell, HP, Lenovo) open one after another.
+
+BIOS updates are only downloaded, never flashed by DDD: read the vendor's notes and run the update yourself
+(**Open folder**). Each line shows its state (Downloading 42% → Ready to install → Installed). If Windows ranks
+the driver it has the same or better, pnputil only adds the new one to the driver store; Device Manager can
+switch to it.
 
 ## Where it looks
 

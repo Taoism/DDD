@@ -81,7 +81,11 @@ public sealed partial class MainWindow : Window
             WindowState = WindowState.Maximized;
         if (_demo)
         {
-            ShowResult(Demo.Result(), TimeSpan.FromSeconds(38));
+            var demoResult = Demo.Result();
+            ShowResult(demoResult, TimeSpan.FromSeconds(38));
+            Demo.FakeDownloads(demoResult, Track);
+            RefreshFindings();
+            DownloadStatusText.Text = "1 ready to install · 1 downloading · 1 installed";
             FindingsGrid.SelectedItem = FindingsGrid.ItemsSource?.OfType<FindingRow>()
                 .FirstOrDefault(r => r.Source == "NVIDIA") ?? FindingsGrid.SelectedItem;
             if (_aboutOnOpen)
@@ -258,11 +262,12 @@ public sealed partial class MainWindow : Window
         bool showCurrent = ShowUpToDateCheck.IsChecked == true;
         var rows = _result.Findings
             .Where(f => showCurrent || f.Status != FindingStatus.UpToDate)
-            .Select(f => new FindingRow(f))
+            .Select(f => new FindingRow(f, DownloadFor(f)))
             .Where(r => r.Matches(filter))
             .ToList();
         var selected = (FindingsGrid.SelectedItem as FindingRow)?.Finding;
         FindingsGrid.ItemsSource = new DataGridCollectionView(rows);
+        UpdateDownloadButtons();
         int updates = _result.Findings.Count(f => f.Status == FindingStatus.UpdateAvailable);
         UpdatesTab.Header = updates > 0 ? $"Updates ({updates})" : "Updates";
 
@@ -324,7 +329,8 @@ public sealed partial class MainWindow : Window
         FactSeverity.Text = f.Severity;
         FactSeverity.IsVisible = FactSeverityLabel.IsVisible = f.Severity.Length > 0;
 
-        DownloadButton.IsVisible = CopyButton.IsVisible = f.DownloadUrl != null;
+        CopyButton.IsVisible = f.DownloadUrl != null;
+        ShowDownloadDetails(f);
         DetailsButton.IsVisible = f.InfoUrl != null;
         DetailsButtonText.Text = f.Status == FindingStatus.CheckManually ? "Open support page" : "Details page";
         if (f.Status == FindingStatus.CheckManually)
@@ -357,7 +363,6 @@ public sealed partial class MainWindow : Window
 
     // ---------- actions ----------
 
-    private async void OnDownloadClick(object? sender, RoutedEventArgs e) => await OpenAsync(Selected?.DownloadUrl);
 
     private async void OnDetailsClick(object? sender, RoutedEventArgs e) => await OpenAsync(Selected?.InfoUrl);
 

@@ -30,6 +30,8 @@ internal static class Program
           --ms-drivers           also look up vendor drivers for devices on Microsoft's built-in drivers
           --studio               NVIDIA Studio driver instead of Game Ready
           --fresh                ignore catalog searches cached in the last 6 hours
+          --download             download, check and extract every update found (into %TEMP%\DDD\downloads);
+                                 installing is done from the DDD app
         """;
 
     public static async Task<int> Main(string[] args)
@@ -141,6 +143,8 @@ internal static class Program
             if (f.ReleaseNotesUrl != null)
                 Console.WriteLine("   notes:    " + f.ReleaseNotesUrl);
         }
+        if (flags.Contains("--download"))
+            await DownloadAllAsync(result, cts.Token);
         foreach (var m in result.Messages)
             await Console.Error.WriteLineAsync($"\n{(m.IsError ? "Error" : "Note")} from {m.Source}: {m.Message}");
         return result.Messages.Any(m => m.IsError) ? 3 : 0;
@@ -174,6 +178,19 @@ internal static class Program
             Console.WriteLine($"     {p.DownloadUrl}");
         }
         return 0;
+    }
+
+    private static async Task DownloadAllAsync(ScanResult result, CancellationToken ct)
+    {
+        var items = result.Findings.Where(DDD.Core.Install.Downloader.CanDownload).Select(f => new DDD.Core.Install.DownloadItem(f)).ToList();
+        Console.WriteLine($"\nDownloading {items.Count} package(s) to {DDD.Core.Install.Downloader.DefaultFolder}");
+        foreach (var item in items)
+        {
+            await DDD.Core.Install.Downloader.RunAsync(item, DDD.Core.Install.Downloader.DefaultFolder, ct);
+            Console.WriteLine($"  [{item.StatusText}] {item.Finding.Device}: {item.Message}");
+            if (item.DriverFolder != null)
+                Console.WriteLine($"     {item.DriverFolder}");
+        }
     }
 
     private static void PrintSystem(SystemInfo s)

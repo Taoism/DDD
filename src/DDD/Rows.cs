@@ -5,8 +5,33 @@ using DDD.Core;
 namespace DDD;
 
 /// <summary>A finding as the Updates grid shows it.</summary>
-public sealed class FindingRow(Finding finding)
+public sealed class FindingRow(Finding finding, DDD.Core.Install.DownloadItem? download = null) : System.ComponentModel.INotifyPropertyChanged
 {
+    public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+    /// <summary>The download of this update, once one was started.</summary>
+    public DDD.Core.Install.DownloadItem? Download { get; } = download;
+
+    public string DownloadText => Download?.StatusText ?? "";
+
+    public IBrush DownloadBrush => Download?.State switch
+    {
+        DDD.Core.Install.DownloadState.Failed => FailBrush,
+        DDD.Core.Install.DownloadState.Installed or DDD.Core.Install.DownloadState.RestartNeeded => OkBrush,
+        DDD.Core.Install.DownloadState.Ready => ReadyBrush,
+        _ => ManualBrush,
+    };
+
+    private static readonly IBrush FailBrush = new SolidColorBrush(Color.Parse("#FFE06060"));
+    private static readonly IBrush ReadyBrush = new SolidColorBrush(Color.Parse("#FF4FA8F5"));
+
+    /// <summary>Tells the grid the download status changed.</summary>
+    public void NotifyDownload()
+    {
+        PropertyChanged?.Invoke(this, new(nameof(DownloadText)));
+        PropertyChanged?.Invoke(this, new(nameof(DownloadBrush)));
+    }
+
     private static readonly IBrush UpdateBrush = new SolidColorBrush(Color.Parse("#FFE0A040"));
     private static readonly IBrush OkBrush = new SolidColorBrush(Color.Parse("#FF5DB85D"));
     private static readonly IBrush ManualBrush = new SolidColorBrush(Color.Parse("#FF7FA3D6"));

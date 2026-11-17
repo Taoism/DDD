@@ -12,6 +12,8 @@
     <StreamGeometry x:Key="IconNotes">M6 2h9l5 5v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Zm8 1.5V8h4.5ZM8 12h8v1.6H8Zm0 3.5h8v1.6H8Z</StreamGeometry>
     <StreamGeometry x:Key="IconCopy">M8 2h11a1 1 0 0 1 1 1v13h-2V4H8ZM4 6h11a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Zm1 2v12h9V8Z</StreamGeometry>
     <StreamGeometry x:Key="IconMore">M5 10.2a1.8 1.8 0 1 1 0 3.6a1.8 1.8 0 0 1 0-3.6Zm7 0a1.8 1.8 0 1 1 0 3.6a1.8 1.8 0 0 1 0-3.6Zm7 0a1.8 1.8 0 1 1 0 3.6a1.8 1.8 0 0 1 0-3.6Z</StreamGeometry>
+    <StreamGeometry x:Key="IconInstall">M5 3h14a1 1 0 0 1 1 1v9h-2V5H6v14h6v2H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm12.6 11 1.4 1.4-4.3 4.3-2.7-2.7 1.4-1.4 1.3 1.3ZM8 8h8v2H8Zm0 4h5v2H8Z</StreamGeometry>
+    <StreamGeometry x:Key="IconFolder">M3 5.5A1.5 1.5 0 0 1 4.5 4h4.6l2 2h8.4A1.5 1.5 0 0 1 21 7.5v11a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5Z</StreamGeometry>
     <StreamGeometry x:Key="IconWindows">M3 5.5 10.5 4.4v7.1H3Zm8.5-1.2L21 3v8.5h-9.5ZM3 12.5h7.5v7.1L3 18.5Zm8.5 0H21V21l-9.5-1.3Z</StreamGeometry>
   </Window.Resources>
 
@@ -91,6 +93,33 @@
       <TabControl x:Name="Tabs">
         <TabItem x:Name="UpdatesTab" Header="Updates">
           <Border Classes="panel">
+            <DockPanel>
+            <Border DockPanel.Dock="Top" Classes="toolbar" Padding="10,8">
+              <Grid ColumnDefinitions="Auto,Auto,Auto,*">
+                <Button x:Name="DownloadAllButton" Click="OnDownloadAllClick" IsEnabled="False" Margin="0,0,8,0"
+                        ToolTip.Tip="Download every update in the list into a temporary folder and check it (checksum or digital signature)">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <PathIcon Data="{StaticResource IconDownload}" Width="14" Height="14" />
+                    <TextBlock x:Name="DownloadAllText" Text="Download all" />
+                  </StackPanel>
+                </Button>
+                <Button Grid.Column="1" x:Name="InstallButton" Classes="accent" Click="OnInstallClick" IsEnabled="False" Margin="0,0,8,0"
+                        ToolTip.Tip="Install the downloaded drivers: driver packages with Windows' pnputil (one administrator prompt), vendor installers one after another">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <PathIcon Data="{StaticResource IconInstall}" Width="14" Height="14" Foreground="White" />
+                    <TextBlock x:Name="InstallText" Text="Install" />
+                  </StackPanel>
+                </Button>
+                <Button Grid.Column="2" x:Name="OpenFolderButton" Click="OnOpenDownloadFolderClick" Margin="0,0,12,0" IsVisible="False"
+                        ToolTip.Tip="Open the folder with the downloaded files">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <PathIcon Data="{StaticResource IconFolder}" Width="14" Height="14" />
+                    <TextBlock Text="Open folder" />
+                  </StackPanel>
+                </Button>
+                <TextBlock Grid.Column="3" x:Name="DownloadStatusText" Classes="muted" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+              </Grid>
+            </Border>
             <Panel>
               <DataGrid x:Name="FindingsGrid" IsReadOnly="True" SelectionMode="Single" AutoGenerateColumns="False"
                         BorderThickness="0" CanUserSortColumns="True" SelectionChanged="OnFindingSelected">
@@ -106,15 +135,24 @@
                     </DataGridTemplateColumn.CellTemplate>
                   </DataGridTemplateColumn>
                   <DataGridTextColumn Header="Device" Binding="{Binding Device}" Width="2*" x:DataType="local:FindingRow" />
-                  <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="120" x:DataType="local:FindingRow" />
+                  <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="105" x:DataType="local:FindingRow" />
                   <DataGridTextColumn Header="Installed" Binding="{Binding Installed}" Width="125" x:DataType="local:FindingRow" />
                   <DataGridTextColumn Header="Available" Binding="{Binding Available}" Width="125" x:DataType="local:FindingRow" />
                   <DataGridTextColumn Header="Released" Binding="{Binding Released}" Width="108" x:DataType="local:FindingRow" />
                   <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="*" x:DataType="local:FindingRow" />
+                  <DataGridTemplateColumn Header="Download" Width="125" SortMemberPath="DownloadText" x:DataType="local:FindingRow">
+                    <DataGridTemplateColumn.CellTemplate>
+                      <DataTemplate x:DataType="local:FindingRow">
+                        <TextBlock Text="{Binding DownloadText}" Foreground="{Binding DownloadBrush}" Margin="10,0,0,0" VerticalAlignment="Center" FontSize="12.5" />
+                      </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                  </DataGridTemplateColumn>
                 </DataGrid.Columns>
                 <DataGrid.ContextMenu>
                   <ContextMenu>
                     <MenuItem Header="Download" Click="OnDownloadClick" />
+                    <MenuItem Header="Install" Click="OnInstallOneClick" />
+                    <MenuItem Header="Open download link in browser" Click="OnBrowserDownloadClick" />
                     <MenuItem Header="Open details page" Click="OnDetailsClick" />
                     <MenuItem Header="Copy download link" Click="OnCopyLinkClick" />
                   </ContextMenu>
@@ -124,9 +162,10 @@
                 <Image Source="avares://DDD/Assets/ddd-64.png" Width="56" Height="56" Opacity="0.85" />
                 <TextBlock x:Name="EmptyTitle" Text="Press Scan for updates" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center" />
                 <TextBlock x:Name="EmptyText" Classes="muted" TextWrapping="Wrap" TextAlignment="Center"
-                           Text="DDD asks Windows Update, the Microsoft Update Catalog, NVIDIA and your PC maker which drivers and BIOS are newer than the ones installed, with links and notes on what they fix. Nothing is installed for you." />
+                           Text="DDD asks Windows Update, the Microsoft Update Catalog, NVIDIA and your PC maker which drivers and BIOS are newer than the ones installed, with links and notes on what they fix. Download all fetches and checks the packages; Install puts them on with one administrator prompt." />
               </StackPanel>
             </Panel>
+            </DockPanel>
           </Border>
         </TabItem>
         <TabItem x:Name="DevicesTab" Header="Devices">
@@ -186,10 +225,22 @@
               </Grid>
 
               <WrapPanel>
-                <Button x:Name="DownloadButton" Classes="accent" Margin="0,0,8,8" Click="OnDownloadClick" ToolTip.Tip="Opens the download in your browser">
+                <Button x:Name="DownloadButton" Classes="accent" Margin="0,0,8,8" Click="OnDownloadClick" ToolTip.Tip="Download and check this update">
                   <StackPanel Orientation="Horizontal" Spacing="6">
                     <PathIcon Data="{StaticResource IconDownload}" Width="14" Height="14" Foreground="White" />
                     <TextBlock Text="Download" />
+                  </StackPanel>
+                </Button>
+                <Button x:Name="InstallOneButton" Classes="accent" Margin="0,0,8,8" Click="OnInstallOneClick" IsVisible="False" ToolTip.Tip="Install this update">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <PathIcon Data="{StaticResource IconInstall}" Width="14" Height="14" Foreground="White" />
+                    <TextBlock Text="Install" />
+                  </StackPanel>
+                </Button>
+                <Button x:Name="FolderOneButton" Margin="0,0,8,8" Click="OnOpenItemFolderClick" IsVisible="False" ToolTip.Tip="Open the folder with this update's files">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <PathIcon Data="{StaticResource IconFolder}" Width="14" Height="14" />
+                    <TextBlock Text="Open folder" />
                   </StackPanel>
                 </Button>
                 <Button x:Name="DetailsButton" Margin="0,0,8,8" Click="OnDetailsClick">
@@ -218,6 +269,7 @@
                 </Button>
               </WrapPanel>
 
+              <TextBlock x:Name="DownloadMessage" TextWrapping="Wrap" IsVisible="False" />
               <TextBlock x:Name="NotesHeader" Classes="header" Text="WHAT IT IMPROVES OR FIXES" Margin="2,4,0,0" />
               <Border Classes="notes" Padding="12,10">
                 <SelectableTextBlock x:Name="DetailNotes" TextWrapping="Wrap" LineHeight="20" />

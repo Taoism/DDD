@@ -102,6 +102,11 @@
   <Style Selector="Border.header">
     <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}" />
   </Style>
+  <Style Selector="Border.toolbar">
+    <Setter Property="Background" Value="{DynamicResource PanelAltBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource EdgeBrush}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+  </Style>
   <Style Selector="Border.notes">
     <Setter Property="Background" Value="{DynamicResource PanelAltBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource EdgeBrush}" />

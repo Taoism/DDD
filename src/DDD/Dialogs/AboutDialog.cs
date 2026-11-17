@@ -35,7 +35,7 @@ public sealed class AboutDialog : DialogWindow
             title,
             version,
             Rule(),
-            Label("Finds newer drivers and BIOS for this PC and tells you where to get them and what they fix. It never installs anything."),
+            Label("Finds newer drivers and BIOS for this PC, tells you what they fix, and downloads, checks and installs the drivers you choose. BIOS updates are only downloaded."),
             Label("Sources: Windows Update, the Microsoft Update Catalog, NVIDIA, and the Dell, HP and Lenovo catalogs. " +
                   "For other board makers it links the BIOS support page."),
             Label("With \"Prefer maker's drivers\" on, the PC maker's or chip maker's driver is recommended over Windows Update's."),

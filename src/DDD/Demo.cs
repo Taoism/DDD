@@ -53,7 +53,7 @@ internal static class Demo
                         "Fixed Gaming Bugs\n• Stutter in some DirectX 12 games when frame generation is on\n\n" +
                         "Fixed General Bugs\n• Incorrect colors with some HDR video playback\n• Display may flicker after waking from sleep on high-refresh monitors\n\n" +
                         "Also offered:\n• Windows Update: 32.0.15.9640 (2026-10-02)",
-                DownloadUrl = "https://www.nvidia.com/en-us/drivers/",
+                DownloadUrl = "https://example.com/demo/621.24-desktop-win10-win11-64bit.exe",
                 InfoUrl = "https://www.nvidia.com/en-us/drivers/",
             },
             new()
@@ -63,11 +63,11 @@ internal static class Demo
                 InstalledVersion = "23.60.1.2", InstalledDate = new DateTime(2025, 11, 2),
                 AvailableVersion = "24.70.0.4", AvailableDate = new DateTime(2026, 7, 31),
                 Title = "Intel Corporation Net Driver Update (24.70.0.4)", Provider = "Intel Corporation", Size = 9_800_000,
+                DownloadUrl = "https://example.com/demo/wifi_24.70.0.4.cab",
                 Notes = "Intel Corporation Net driver update released in July 2026\n\n" +
                         "Newer driver from Intel: 24.70.0.4 (installed: 23.60.1.2).\n" +
                         "Made for: Intel(R) Wi-Fi 6E AX211 160MHz, Intel(R) Wi-Fi 6E AX210 160MHz\n" +
                         "Windows versions: Windows 11 Client, version 24H2 and later, Servicing Drivers",
-                DownloadUrl = "https://www.catalog.update.microsoft.com/",
                 InfoUrl = "https://www.catalog.update.microsoft.com/",
             },
             new()
@@ -77,10 +77,10 @@ internal static class Demo
                 InstalledVersion = "23.60.0.1", InstalledDate = new DateTime(2025, 11, 2),
                 AvailableVersion = "24.70.0.4", AvailableDate = new DateTime(2026, 7, 31),
                 Title = "Intel Corporation Bluetooth Driver Update (24.70.0.4)", Provider = "Intel Corporation", Size = 3_100_000,
+                DownloadUrl = "https://example.com/demo/bluetooth_24.70.0.4.cab",
                 Severity = "Optional",
                 Notes = "Intel Corporation Bluetooth driver update released in July 2026\n\n" +
                         "Windows Update offers this as an optional driver update (Settings › Windows Update › Advanced options › Optional updates).",
-                DownloadUrl = "https://www.catalog.update.microsoft.com/",
                 InfoUrl = "https://www.catalog.update.microsoft.com/",
             },
             new()
@@ -90,8 +90,8 @@ internal static class Demo
                 InstalledVersion = "2540.8.0.0", InstalledDate = new DateTime(2025, 10, 1),
                 AvailableVersion = "2603.9.4.0", AvailableDate = new DateTime(2026, 1, 12),
                 Title = "Intel - System - 2603.9.4.0", Provider = "Intel", Size = 1_400_000,
+                DownloadUrl = "https://example.com/demo/mei_2603.9.4.0.cab",
                 Notes = "Intel System driver update released in January 2026\n\nNewer driver from Intel: 2603.9.4.0 (installed: 2540.8.0.0).",
-                DownloadUrl = "https://www.catalog.update.microsoft.com/",
                 InfoUrl = "https://www.catalog.update.microsoft.com/",
             },
             new()
@@ -111,6 +111,21 @@ internal static class Demo
             Current("smbus", "Intel(R) SMBus - 7A23", "System", "10.1.46.5", "Update Catalog"),
         };
         return new ScanResult(system, devices, Scanner.Merge(findings), [], new DateTime(2026, 11, 17, 14, 0, 0));
+    }
+
+    /// <summary>Example download states for the Download column (nothing is downloaded).</summary>
+    public static void FakeDownloads(ScanResult result, Func<Finding, DDD.Core.Install.DownloadItem> track)
+    {
+        foreach (var f in result.Findings.Where(f => f.DownloadUrl != null))
+        {
+            var item = track(f);
+            if (f.Source == "NVIDIA")
+                item.Set(DDD.Core.Install.DownloadState.Ready, "Installer signed by NVIDIA Corporation.");
+            else if (f.Device.Contains("Wi-Fi", StringComparison.Ordinal))
+                item.Set(DDD.Core.Install.DownloadState.Downloading, "", 42);
+            else if (f.Device.Contains("Bluetooth", StringComparison.Ordinal))
+                item.Set(DDD.Core.Install.DownloadState.Installed, "Installed with pnputil.");
+        }
     }
 
     private static DeviceInfo Dev(string id, string name, string cls, string provider, string version, int y, int m, int d, string hwid, string inf) => new()

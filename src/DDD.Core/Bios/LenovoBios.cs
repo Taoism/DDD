@@ -17,7 +17,8 @@ internal static partial class LenovoBios
         long? Size,
         string? ReadmeUrl,
         IReadOnlyList<string> BiosLevels,
-        string Severity);
+        string Severity,
+        string? Sha256 = null);
 
     public static async Task<Finding?> CheckAsync(OemCatalogs catalogs, CancellationToken ct)
     {
@@ -58,7 +59,7 @@ internal static partial class LenovoBios
 
         return BiosSource.Make(system, "Lenovo", BiosSource.IsNewer(installed, best.Version, system.BiosDate, best.Released),
             installed, best.Version, best.Released, best.Title, notes, best.InstallerUrl,
-            $"https://pcsupport.lenovo.com/search?query={Uri.EscapeDataString(system.Model)}", best.ReadmeUrl, best.Size, best.Severity);
+            $"https://pcsupport.lenovo.com/search?query={Uri.EscapeDataString(system.Model)}", best.ReadmeUrl, best.Size, best.Severity, best.Sha256);
     }
 
     internal static IEnumerable<string> BiosLocations(XDocument catalog) =>
@@ -96,7 +97,8 @@ internal static partial class LenovoBios
                 "2" => "Recommended",
                 "3" => "Optional",
                 _ => "",
-            });
+            },
+            Oem.OemDriverSource.Sha256OrNull((string?)installer?.Element("CRC")));
     }
 
     /// <summary>"N32ET96W (1.72 )" → "1.72"; anything else is returned trimmed.</summary>

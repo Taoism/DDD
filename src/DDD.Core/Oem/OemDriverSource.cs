@@ -29,6 +29,9 @@ public sealed record OemPackage
     public string? ReleaseNotesUrl { get; init; }
     public long? Size { get; init; }
     public string Severity { get; init; } = "";
+
+    /// <summary>SHA-256 of the download, as the catalog lists it.</summary>
+    public string? Sha256 { get; init; }
 }
 
 /// <summary>
@@ -145,6 +148,7 @@ public sealed partial class OemDriverSource(OemCatalogs catalogs) : IUpdateSourc
             ReleaseNotesUrl = p.ReleaseNotesUrl,
             Size = p.Size,
             Severity = p.Severity,
+            Sha256 = p.Sha256,
         };
     }
 
@@ -194,12 +198,25 @@ public sealed partial class OemDriverSource(OemCatalogs catalogs) : IUpdateSourc
                 InfoUrl = (string?)Child(c, "ImportantInfo")?.Attribute("URL"),
                 Size = long.TryParse((string?)c.Attribute("size"), NumberStyles.None, CultureInfo.InvariantCulture, out long size) ? size : null,
                 Severity = Display(Child(c, "Criticality")),
+                Sha256 = DellSha256(c),
             });
         }
         return list;
     }
 
     private static XElement? Child(XElement e, string localName) => e.Elements().FirstOrDefault(x => x.Name.LocalName == localName);
+
+    /// <summary>The SHA-256 from a Dell component's Cryptography block.</summary>
+    internal static string? DellSha256(XElement component) =>
+        Sha256OrNull(component.Descendants().FirstOrDefault(e => e.Name.LocalName == "Hash"
+            && string.Equals((string?)e.Attribute("algorithm"), "SHA256", StringComparison.OrdinalIgnoreCase))?.Value);
+
+    /// <summary>The value when it looks like a SHA-256 (64 hex digits), else null.</summary>
+    internal static string? Sha256OrNull(string? value)
+    {
+        value = value?.Trim();
+        return value is { Length: 64 } && value.All(char.IsAsciiHexDigit) ? value.ToUpperInvariant() : null;
+    }
 
     private static string Display(XElement? e) => e?.Elements().FirstOrDefault(x => x.Name.LocalName == "Display")?.Value.Trim() ?? "";
 
@@ -251,6 +268,7 @@ public sealed partial class OemDriverSource(OemCatalogs catalogs) : IUpdateSourc
             ReleaseNotesUrl = Https((string?)update.Element("ReleaseNotesUrl")),
             Size = long.TryParse((string?)update.Element("Size"), NumberStyles.None, CultureInfo.InvariantCulture, out long size) ? size : null,
             Severity = ((string?)update.Element("ReleaseType") ?? "").Trim(),
+            Sha256 = Sha256OrNull((string?)update.Element("SHA256")),
         };
     }
 
@@ -361,6 +379,7 @@ public sealed partial class OemDriverSource(OemCatalogs catalogs) : IUpdateSourc
                 "3" => "Optional",
                 _ => "",
             },
+            Sha256 = Sha256OrNull((string?)installer?.Element("CRC")),
         };
     }
 

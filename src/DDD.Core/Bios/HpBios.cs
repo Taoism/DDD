@@ -18,7 +18,8 @@ internal static partial class HpBios
         long? Size,
         string Description,
         string Family,
-        string ReleaseType);
+        string ReleaseType,
+        string? Sha256 = null);
 
     public static async Task<Finding?> CheckAsync(OemCatalogs catalogs, CancellationToken ct)
     {
@@ -51,7 +52,7 @@ internal static partial class HpBios
         }
         return BiosSource.Make(system, "HP", BiosSource.IsNewer(installed, best.Version, system.BiosDate, best.Released),
             installed, best.Version, best.Released, best.Name, notes, best.Url,
-            $"https://support.hp.com/drivers", best.ReleaseNotesUrl, best.Size, best.ReleaseType);
+            "https://support.hp.com/drivers", best.ReleaseNotesUrl, best.Size, best.ReleaseType, best.Sha256);
     }
 
     /// <summary>"11.0.25h2", "11.0.24h2" ... newest first, starting at this PC's release.</summary>
@@ -95,7 +96,8 @@ internal static partial class HpBios
                 long.TryParse((string?)u.Element("Size"), NumberStyles.None, CultureInfo.InvariantCulture, out long size) ? size : null,
                 ((string?)u.Element("Description") ?? "").Trim(),
                 ((string?)u.Descendants("BiosFamily").FirstOrDefault() ?? "").Trim(),
-                ((string?)u.Element("ReleaseType") ?? "").Trim()))
+                ((string?)u.Element("ReleaseType") ?? "").Trim(),
+                Oem.OemDriverSource.Sha256OrNull((string?)u.Element("SHA256"))))
             .ToList();
     }
 

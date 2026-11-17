@@ -30,7 +30,7 @@ public sealed class BiosSource(OemCatalogs catalogs) : IUpdateSource
 
     /// <summary>Builds the BIOS line; <paramref name="newer"/> decides between "update available" and "up to date".</summary>
     internal static Finding Make(SystemInfo system, string source, bool newer, string installed, string available, DateTime? released,
-        string title, string notes, string? download, string? info, string? releaseNotes, long? size, string severity) => new()
+        string title, string notes, string? download, string? info, string? releaseNotes, long? size, string severity, string? sha256 = null) => new()
     {
         Kind = UpdateKind.Bios,
         Status = newer ? FindingStatus.UpdateAvailable : FindingStatus.UpToDate,
@@ -49,6 +49,7 @@ public sealed class BiosSource(OemCatalogs catalogs) : IUpdateSource
         ReleaseNotesUrl = releaseNotes,
         Size = size,
         Severity = severity,
+        Sha256 = sha256,
     };
 
     /// <summary>

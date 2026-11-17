@@ -56,6 +56,29 @@ public static class Cab
         }
     }
 
+    /// <summary>Extracts every file of <paramref name="cabPath"/> into <paramref name="folder"/>, keeping sub-folders.</summary>
+    public static async Task ExtractAllAsync(string cabPath, string folder, CancellationToken ct)
+    {
+        Directory.CreateDirectory(folder);
+        var psi = new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "expand.exe"))
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+        psi.ArgumentList.Add(cabPath);
+        psi.ArgumentList.Add("-F:*");
+        psi.ArgumentList.Add(folder);
+        using var process = Process.Start(psi) ?? throw new InvalidOperationException("expand.exe did not start.");
+        var stdout = process.StandardOutput.ReadToEndAsync(ct);
+        var stderr = process.StandardError.ReadToEndAsync(ct);
+        await process.WaitForExitAsync(ct).ConfigureAwait(false);
+        await Task.WhenAll(stdout, stderr).ConfigureAwait(false);
+        if (process.ExitCode != 0)
+            throw new InvalidDataException($"Could not extract the package (expand.exe exit code {process.ExitCode}).");
+    }
+
     /// <summary>Downloads a .cab, extracts it and parses the XML inside (UTF-8 or UTF-16).</summary>
     public static async Task<XDocument> DownloadXmlAsync(string url, CancellationToken ct)
     {

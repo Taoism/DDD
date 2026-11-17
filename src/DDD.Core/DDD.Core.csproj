@@ -4,6 +4,7 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <RootNamespace>DDD.Core</RootNamespace>
     <AssemblyName>DDD.Core</AssemblyName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>

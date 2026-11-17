@@ -127,6 +127,9 @@ public sealed record Finding
     public string? ReleaseNotesUrl { get; init; }
     public long? Size { get; init; }
 
+    /// <summary>SHA-256 of the download, when the vendor publishes it (Dell, HP, Lenovo).</summary>
+    public string? Sha256 { get; init; }
+
     /// <summary>"Critical", "Recommended", "Optional" when the source says.</summary>
     public string Severity { get; init; } = "";
 }

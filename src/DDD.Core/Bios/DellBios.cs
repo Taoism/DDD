@@ -15,7 +15,8 @@ internal static class DellBios
         long? Size,
         string Description,
         string? InfoUrl,
-        string Criticality);
+        string Criticality,
+        string? Sha256 = null);
 
     public static async Task<Finding?> CheckAsync(OemCatalogs catalogs, CancellationToken ct)
     {
@@ -38,7 +39,7 @@ internal static class DellBios
         notes += "\n\nDell lists the fixes and enhancements of each version on the driver page (Details link).";
         return BiosSource.Make(system, "Dell", BiosSource.IsNewer(installed, best.VendorVersion, system.BiosDate, best.Released),
             installed, best.VendorVersion, best.Released, best.Name, notes, OemCatalogs.DellUrl(best.Path),
-            best.InfoUrl, null, best.Size, best.Criticality);
+            best.InfoUrl, null, best.Size, best.Criticality, best.Sha256);
     }
 
     /// <summary>Path of the model's own catalog inside the index, by system ID.</summary>
@@ -69,7 +70,8 @@ internal static class DellBios
                 long.TryParse((string?)c.Attribute("size"), NumberStyles.None, CultureInfo.InvariantCulture, out long size) ? size : null,
                 Display(Child(c, "Description")),
                 (string?)Child(c, "ImportantInfo")?.Attribute("URL"),
-                Display(Child(c, "Criticality"))));
+                Display(Child(c, "Criticality")),
+                Oem.OemDriverSource.DellSha256(c)));
         }
         return list;
     }
