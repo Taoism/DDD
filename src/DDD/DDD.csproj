@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>DDD</RootNamespace>
+    <AssemblyName>DDD</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets/ddd.ico</ApplicationIcon>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.6" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.6" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.6" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.6" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="12.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DDD.Core\DDD.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <!-- native debug symbols from SkiaSharp/HarfBuzz are not shipped -->
+  <Target Name="DddDropNativePdbs" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Extension)' == '.pdb'" />
+    </ItemGroup>
+  </Target>
+
+</Project>

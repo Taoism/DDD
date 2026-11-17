@@ -1,0 +1,231 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:DDD"
+        x:Class="DDD.MainWindow"
+        Title="DDD — Drivers, Drivers, Drivers"
+        Width="1320" Height="820" MinWidth="960" MinHeight="580">
+
+  <Window.Resources>
+    <StreamGeometry x:Key="IconScan">M12 4a8 8 0 0 1 7.4 5h-2.2A6 6 0 0 0 6.3 10.2L8.5 12.4H2V5.9l2.9 2.9A8 8 0 0 1 12 4Zm7.1 9.6L22 12.1v6.5h-6.5l2.2-2.2A6 6 0 0 1 6.8 15H4.6A8 8 0 0 0 19.1 13.6Z</StreamGeometry>
+    <StreamGeometry x:Key="IconDownload">M11 3h2v9.2l3.3-3.3 1.4 1.4L12 16l-5.7-5.7 1.4-1.4L11 12.2ZM4 18h16v2H4Z</StreamGeometry>
+    <StreamGeometry x:Key="IconLink">M14 3h7v7h-2V6.4l-8.3 8.3-1.4-1.4L17.6 5H14ZM5 5h6v2H6v11h11v-5h2v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z</StreamGeometry>
+    <StreamGeometry x:Key="IconNotes">M6 2h9l5 5v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Zm8 1.5V8h4.5ZM8 12h8v1.6H8Zm0 3.5h8v1.6H8Z</StreamGeometry>
+    <StreamGeometry x:Key="IconCopy">M8 2h11a1 1 0 0 1 1 1v13h-2V4H8ZM4 6h11a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Zm1 2v12h9V8Z</StreamGeometry>
+    <StreamGeometry x:Key="IconMore">M5 10.2a1.8 1.8 0 1 1 0 3.6a1.8 1.8 0 0 1 0-3.6Zm7 0a1.8 1.8 0 1 1 0 3.6a1.8 1.8 0 0 1 0-3.6Zm7 0a1.8 1.8 0 1 1 0 3.6a1.8 1.8 0 0 1 0-3.6Z</StreamGeometry>
+    <StreamGeometry x:Key="IconWindows">M3 5.5 10.5 4.4v7.1H3Zm8.5-1.2L21 3v8.5h-9.5ZM3 12.5h7.5v7.1L3 18.5Zm8.5 0H21V21l-9.5-1.3Z</StreamGeometry>
+  </Window.Resources>
+
+  <DockPanel>
+
+    <!-- header: app name, this PC, scan button -->
+    <Border DockPanel.Dock="Top" Classes="header" Padding="16,12,16,10">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <StackPanel x:Name="SignHost" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center" />
+        <StackPanel Grid.Column="1" Margin="28,0,12,0" VerticalAlignment="Center" Spacing="1">
+          <TextBlock x:Name="SystemText" Text="Reading this PC…" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+          <TextBlock x:Name="SystemDetailText" Classes="muted" FontSize="12" TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Button x:Name="ScanButton" Classes="accent" MinWidth="170" Click="OnScanClick" ToolTip.Tip="Check every source for newer drivers (F5)">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <PathIcon Data="{StaticResource IconScan}" Width="16" Height="16" Foreground="White" />
+              <TextBlock x:Name="ScanButtonText" Text="Scan for updates" />
+            </StackPanel>
+          </Button>
+          <Button x:Name="MenuButton" ToolTip.Tip="More" Padding="8,4">
+            <PathIcon Data="{StaticResource IconMore}" Width="16" Height="16" />
+            <Button.Flyout>
+              <MenuFlyout Placement="BottomEdgeAlignedRight">
+                <MenuItem Header="Export report…" Click="OnExportClick" />
+                <MenuItem Header="Open Windows Update" Click="OnOpenWindowsUpdate" />
+                <MenuItem Header="Open Device Manager" Click="OnOpenDeviceManager" />
+                <MenuItem Header="Forget cached catalog searches" Click="OnClearCacheClick"
+                          ToolTip.Tip="DDD reuses Update Catalog searches for 6 hours so rescans don't get throttled" />
+                <Separator />
+                <MenuItem Header="Theme">
+                  <MenuItem x:Name="ThemeDark" Header="Dark" ToggleType="Radio" GroupName="theme" Click="OnThemeClick" Tag="Dark" />
+                  <MenuItem x:Name="ThemeLight" Header="Light" ToggleType="Radio" GroupName="theme" Click="OnThemeClick" Tag="Light" />
+                  <MenuItem x:Name="ThemeSystem" Header="Follow Windows" ToggleType="Radio" GroupName="theme" Click="OnThemeClick" Tag="System" />
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="About DDD" Click="OnAboutClick" />
+              </MenuFlyout>
+            </Button.Flyout>
+          </Button>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- sources and filters -->
+    <Border DockPanel.Dock="Top" Padding="16,2,16,6">
+      <Grid ColumnDefinitions="*,Auto">
+        <WrapPanel VerticalAlignment="Center">
+          <TextBlock Text="Check:" Classes="muted" VerticalAlignment="Center" Margin="0,0,10,0" />
+          <CheckBox x:Name="WuCheck" Content="Windows Update" Margin="0,0,14,0" ToolTip.Tip="Driver updates Windows Update has for this PC, including optional ones" />
+          <CheckBox x:Name="CatalogCheck" Content="Update Catalog" Margin="0,0,14,0" ToolTip.Tip="Every device looked up in the Microsoft Update Catalog by hardware ID; often newer than Windows Update" />
+          <CheckBox x:Name="NvidiaCheck" Content="NVIDIA" Margin="0,0,14,0" ToolTip.Tip="GeForce drivers and release notes straight from NVIDIA" />
+          <CheckBox x:Name="OemCheck" Content="PC maker" Margin="0,0,14,0" ToolTip.Tip="Drivers from Dell's, HP's or Lenovo's catalog for this model" />
+          <CheckBox x:Name="BiosCheck" Content="BIOS" Margin="0,0,24,0" ToolTip.Tip="Dell, HP and Lenovo catalogs; a support-page link for other makers" />
+          <CheckBox x:Name="PreferMakerCheck" Content="Prefer maker's drivers" Margin="0,0,14,0" ToolTip.Tip="When sources disagree, recommend the PC maker's or chip maker's driver over Windows Update's, even if Windows Update's version is higher. Off: the highest version wins." />
+          <CheckBox x:Name="MsDriversCheck" Content="Include devices on Microsoft drivers" Margin="0,0,14,0" ToolTip.Tip="Also look for vendor drivers for devices that use Windows' built-in drivers" />
+          <CheckBox x:Name="StudioCheck" Content="NVIDIA Studio driver" Margin="0,0,14,0" ToolTip.Tip="Studio instead of Game Ready" />
+        </WrapPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+          <CheckBox x:Name="ShowUpToDateCheck" Content="Show up-to-date" IsCheckedChanged="OnShowUpToDateChanged" />
+          <TextBox x:Name="FilterBox" Width="220" PlaceholderText="Filter…" TextChanged="OnFilterChanged" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- status bar -->
+    <Border DockPanel.Dock="Bottom" Classes="footer" Padding="14,6">
+      <Grid ColumnDefinitions="*,Auto,Auto">
+        <TextBlock x:Name="StatusText" Text="Ready." VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+        <TextBlock Grid.Column="1" x:Name="MessagesText" Classes="muted" VerticalAlignment="Center" Margin="12,0" TextTrimming="CharacterEllipsis" MaxWidth="520" />
+        <ProgressBar Grid.Column="2" x:Name="Progress" Width="160" Height="6" MinHeight="6" IsIndeterminate="True" IsVisible="False" VerticalAlignment="Center" />
+      </Grid>
+    </Border>
+
+    <Grid x:Name="BodyGrid" ColumnDefinitions="*,6,430" Margin="12,4,12,10">
+
+      <TabControl x:Name="Tabs">
+        <TabItem x:Name="UpdatesTab" Header="Updates">
+          <Border Classes="panel">
+            <Panel>
+              <DataGrid x:Name="FindingsGrid" IsReadOnly="True" SelectionMode="Single" AutoGenerateColumns="False"
+                        BorderThickness="0" CanUserSortColumns="True" SelectionChanged="OnFindingSelected">
+                <DataGrid.Columns>
+                  <DataGridTemplateColumn Header="Status" Width="150" SortMemberPath="StatusOrder" x:DataType="local:FindingRow">
+                    <DataGridTemplateColumn.CellTemplate>
+                      <DataTemplate x:DataType="local:FindingRow">
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="10,0,0,0" VerticalAlignment="Center">
+                          <Ellipse Width="9" Height="9" Fill="{Binding StatusBrush}" VerticalAlignment="Center" />
+                          <TextBlock Text="{Binding StatusText}" Foreground="{Binding StatusBrush}" VerticalAlignment="Center" FontSize="12.5" />
+                        </StackPanel>
+                      </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                  </DataGridTemplateColumn>
+                  <DataGridTextColumn Header="Device" Binding="{Binding Device}" Width="2*" x:DataType="local:FindingRow" />
+                  <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="120" x:DataType="local:FindingRow" />
+                  <DataGridTextColumn Header="Installed" Binding="{Binding Installed}" Width="125" x:DataType="local:FindingRow" />
+                  <DataGridTextColumn Header="Available" Binding="{Binding Available}" Width="125" x:DataType="local:FindingRow" />
+                  <DataGridTextColumn Header="Released" Binding="{Binding Released}" Width="108" x:DataType="local:FindingRow" />
+                  <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="*" x:DataType="local:FindingRow" />
+                </DataGrid.Columns>
+                <DataGrid.ContextMenu>
+                  <ContextMenu>
+                    <MenuItem Header="Download" Click="OnDownloadClick" />
+                    <MenuItem Header="Open details page" Click="OnDetailsClick" />
+                    <MenuItem Header="Copy download link" Click="OnCopyLinkClick" />
+                  </ContextMenu>
+                </DataGrid.ContextMenu>
+              </DataGrid>
+              <StackPanel x:Name="EmptyState" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10" MaxWidth="460">
+                <Image Source="avares://DDD/Assets/ddd-64.png" Width="56" Height="56" Opacity="0.85" />
+                <TextBlock x:Name="EmptyTitle" Text="Press Scan for updates" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                <TextBlock x:Name="EmptyText" Classes="muted" TextWrapping="Wrap" TextAlignment="Center"
+                           Text="DDD asks Windows Update, the Microsoft Update Catalog, NVIDIA and your PC maker which drivers and BIOS are newer than the ones installed, with links and notes on what they fix. Nothing is installed for you." />
+              </StackPanel>
+            </Panel>
+          </Border>
+        </TabItem>
+        <TabItem x:Name="DevicesTab" Header="Devices">
+          <Border Classes="panel">
+            <DataGrid x:Name="DevicesGrid" IsReadOnly="True" SelectionMode="Single" AutoGenerateColumns="False"
+                      BorderThickness="0" CanUserSortColumns="True">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Device" Binding="{Binding Name}" Width="2*" x:DataType="local:DeviceRow" />
+                <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="130" x:DataType="local:DeviceRow" />
+                <DataGridTextColumn Header="Driver provider" Binding="{Binding Provider}" Width="150" x:DataType="local:DeviceRow" />
+                <DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="130" x:DataType="local:DeviceRow" />
+                <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="95" x:DataType="local:DeviceRow" />
+                <DataGridTextColumn Header="INF" Binding="{Binding Inf}" Width="110" x:DataType="local:DeviceRow" />
+                <DataGridTextColumn Header="Hardware ID" Binding="{Binding HardwareId}" Width="*" x:DataType="local:DeviceRow" />
+                <DataGridTextColumn Header="" Binding="{Binding Problem}" Width="70" x:DataType="local:DeviceRow" />
+              </DataGrid.Columns>
+              <DataGrid.ContextMenu>
+                <ContextMenu>
+                  <MenuItem Header="Copy hardware ID" Click="OnCopyHardwareIdClick" />
+                  <MenuItem Header="Search the Update Catalog" Click="OnSearchCatalogClick" />
+                </ContextMenu>
+              </DataGrid.ContextMenu>
+            </DataGrid>
+          </Border>
+        </TabItem>
+      </TabControl>
+
+      <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
+
+      <!-- details of the selected finding -->
+      <Border Grid.Column="2" Classes="panel" Margin="0,38,0,0">
+        <Panel>
+          <TextBlock x:Name="DetailEmpty" Classes="muted" Text="Select a line to see what the update changes and where to get it."
+                     TextWrapping="Wrap" Margin="18" VerticalAlignment="Top" />
+          <ScrollViewer x:Name="DetailPane" IsVisible="False" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="16,14,16,16" Spacing="10">
+              <TextBlock x:Name="DetailDevice" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" />
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Ellipse x:Name="DetailDot" Width="9" Height="9" VerticalAlignment="Center" />
+                <TextBlock x:Name="DetailStatus" FontWeight="SemiBold" VerticalAlignment="Center" />
+              </StackPanel>
+              <TextBlock x:Name="DetailTitle" Classes="muted" TextWrapping="Wrap" />
+
+              <Grid x:Name="DetailFacts" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" Margin="0,2,0,2">
+                <TextBlock Classes="muted" Text="Installed" Margin="0,0,14,4" />
+                <SelectableTextBlock Grid.Column="1" x:Name="FactInstalled" Classes="mono" TextWrapping="Wrap" Margin="0,0,0,4" />
+                <TextBlock Grid.Row="1" Classes="muted" Text="Available" Margin="0,0,14,4" />
+                <SelectableTextBlock Grid.Row="1" Grid.Column="1" x:Name="FactAvailable" Classes="mono" TextWrapping="Wrap" Margin="0,0,0,4" />
+                <TextBlock Grid.Row="2" Classes="muted" Text="Source" Margin="0,0,14,4" />
+                <TextBlock Grid.Row="2" Grid.Column="1" x:Name="FactSource" TextWrapping="Wrap" Margin="0,0,0,4" />
+                <TextBlock Grid.Row="3" Classes="muted" Text="Provider" Margin="0,0,14,4" />
+                <TextBlock Grid.Row="3" Grid.Column="1" x:Name="FactProvider" TextWrapping="Wrap" Margin="0,0,0,4" />
+                <TextBlock Grid.Row="4" Classes="muted" Text="Size" Margin="0,0,14,4" x:Name="FactSizeLabel" />
+                <TextBlock Grid.Row="4" Grid.Column="1" x:Name="FactSize" Margin="0,0,0,4" />
+                <TextBlock Grid.Row="5" Classes="muted" Text="Rating" Margin="0,0,14,4" x:Name="FactSeverityLabel" />
+                <TextBlock Grid.Row="5" Grid.Column="1" x:Name="FactSeverity" Margin="0,0,0,4" />
+              </Grid>
+
+              <WrapPanel>
+                <Button x:Name="DownloadButton" Classes="accent" Margin="0,0,8,8" Click="OnDownloadClick" ToolTip.Tip="Opens the download in your browser">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <PathIcon Data="{StaticResource IconDownload}" Width="14" Height="14" Foreground="White" />
+                    <TextBlock Text="Download" />
+                  </StackPanel>
+                </Button>
+                <Button x:Name="DetailsButton" Margin="0,0,8,8" Click="OnDetailsClick">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <PathIcon Data="{StaticResource IconLink}" Width="14" Height="14" />
+                    <TextBlock x:Name="DetailsButtonText" Text="Details page" />
+                  </StackPanel>
+                </Button>
+                <Button x:Name="NotesButton" Margin="0,0,8,8" Click="OnNotesClick">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <PathIcon Data="{StaticResource IconNotes}" Width="14" Height="14" />
+                    <TextBlock Text="Release notes" />
+                  </StackPanel>
+                </Button>
+                <Button x:Name="CopyButton" Margin="0,0,8,8" Click="OnCopyLinkClick" ToolTip.Tip="Copy the download link">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <PathIcon Data="{StaticResource IconCopy}" Width="14" Height="14" />
+                    <TextBlock Text="Copy link" />
+                  </StackPanel>
+                </Button>
+                <Button x:Name="WindowsUpdateButton" Margin="0,0,8,8" Click="OnOpenWindowsUpdate" ToolTip.Tip="Install it through Windows Update › Optional updates">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <PathIcon Data="{StaticResource IconWindows}" Width="14" Height="14" />
+                    <TextBlock Text="Windows Update" />
+                  </StackPanel>
+                </Button>
+              </WrapPanel>
+
+              <TextBlock x:Name="NotesHeader" Classes="header" Text="WHAT IT IMPROVES OR FIXES" Margin="2,4,0,0" />
+              <Border Classes="notes" Padding="12,10">
+                <SelectableTextBlock x:Name="DetailNotes" TextWrapping="Wrap" LineHeight="20" />
+              </Border>
+            </StackPanel>
+          </ScrollViewer>
+        </Panel>
+      </Border>
+    </Grid>
+  </DockPanel>
+</Window>

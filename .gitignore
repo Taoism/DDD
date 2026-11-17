@@ -1,0 +1,10 @@
+bin/
+obj/
+publish/
+release/
+run/
+.vs/
+*.user
+.sonarqube/
+.sonar-cpp/
+TestResults/

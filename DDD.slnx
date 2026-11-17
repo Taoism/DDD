@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DDD.Core/DDD.Core.csproj" />
+    <Project Path="src/DDD.Cli/DDD.Cli.csproj" />
+    <Project Path="src/DDD/DDD.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DDD.Tests/DDD.Tests.csproj" />
+  </Folder>
+</Solution>

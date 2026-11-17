@@ -1,0 +1,11 @@
+DDD uses third-party software.
+
+Avalonia (https://avaloniaui.net/) - MIT License, Copyright (c) AvaloniaUI OÜ and contributors.
+Avalonia.Controls.DataGrid - MIT License, Copyright (c) AvaloniaUI OÜ and contributors.
+SkiaSharp / HarfBuzzSharp - MIT License, Copyright (c) Microsoft Corporation / .NET Foundation.
+Inter font - SIL Open Font License 1.1, Copyright (c) The Inter Project Authors.
+.NET runtime and System.Management - MIT License, Copyright (c) .NET Foundation and Contributors.
+
+DDD reads public update information from Microsoft (Windows Update, Microsoft Update Catalog),
+NVIDIA, Dell, HP and Lenovo. Drivers and BIOS files are downloaded from those vendors' own
+servers and remain under the vendors' licenses.
